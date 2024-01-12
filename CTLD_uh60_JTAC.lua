@@ -29,8 +29,8 @@
  ctld.Version = "202401.02"
  
  -- To add debugging messages to dcs.log, change the following log levels to `true`; `Debug` is less detailed than `Trace`
- ctld.Debug = true
- ctld.Trace = true
+ ctld.Debug = false
+ ctld.Trace = false
  
  ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
  
@@ -136,8 +136,8 @@
  
  ctld.JTAC_maxDistance = 10000 -- How far a JTAC can "see" in meters (with Line of Sight)
  
- ctld.JTAC_smokeOn_RED = true -- enables marking of target with smoke for RED forces
- ctld.JTAC_smokeOn_BLUE = true -- enables marking of target with smoke for BLUE forces
+ ctld.JTAC_smokeOn_RED = false -- enables marking of target with smoke for RED forces
+ ctld.JTAC_smokeOn_BLUE = false -- enables marking of target with smoke for BLUE forces
  
  ctld.JTAC_smokeColour_RED = 4 -- RED side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
  ctld.JTAC_smokeColour_BLUE = 1 -- BLUE side smoke colour -- Green = 0 , Red = 1, White = 2, Orange = 3, Blue = 4
@@ -178,7 +178,7 @@
  
  --pickupZones = { "Zone name or Ship Unit Name", "smoke color", "limit (-1 unlimited)", "ACTIVE (yes/no)", "side (0 = Both sides / 1 = Red / 2 = Blue )", flag number (optional) }
  ctld.pickupZones = {
- { "CSAR Batumi", "blue", -1, "yes", 0 },
+     { "CSAR Batumi", "blue", -1, "yes", 0 },
      { "CSAR Beslan", "blue", -1, "yes", 0 },
      { "CSAR Brave", "blue", -1, "yes", 0 },
      { "CSAR Burke", "blue", -1, "yes", 0 },
