@@ -1949,16 +1949,30 @@
      end
      return true
  end
+ local _JTACUnitName = "nEn"
+ local _groupTrue = "nEn"
+ -- searches for a specific unit/name in the units table
+ function searchJTAC(_JTACname)
+
+    if ctld.jtacUnits[_JTACname] then 
+        _groupTrue = true 
+    else 
+        _groupTrue = false
+    end
+
+    ctld.logDebug(string.format("passed JTAC name= %s exists= %s", _JTACname, tostring(ctld.jtacUnits[_JTACname])))
+    --return ctld.jtacUnits[_JTACname] ~= nil
+ end
  
  function ctld.deployTroops(_heli, _troops)
- 
+
      local _onboard = ctld.inTransitTroops[_heli:getName()]
  
      -- deloy troops
      if _troops then
          if _onboard.troops ~= nil and #_onboard.troops.units > 0 then
              if ctld.inAir(_heli) == false or ctld.safeToFastRope(_heli) then
- 
+                searchJTAC(_JTACUnitName)
                  -- check we're not in extract zone
                  local _extractZone = ctld.inExtractZone(_heli)
  
@@ -1966,17 +1980,20 @@
  
                      local _droppedTroops = ctld.spawnDroppedGroup(_heli:getPoint(), _onboard.troops, false)
                      if _onboard.troops.jtac or _droppedTroops:getName():lower():find("jtac") then
-                         if (_heli:getTypeName() == "UH-60L" or _heli:getTypeName() == "MH-60R" or _heli:getTypeName() == "SH60B") then
+                        local _onboardUnit = _droppedTroops:getName() -- get the name of the unit and assigns it to _onboardUnit. We want to use this to check if a JTAC with code 1688 is already spawned.
+                         if (_heli:getTypeName() == "UH-60L" or _heli:getTypeName() == "MH-60R" or _heli:getTypeName() == "SH60B") then -- add logic to check if the jtac name is diff from the stored name 
                              local _code = 1688
+                             _JTACUnitName = (_onboard.troops.groupName)
+                             -- STORE Jtac name in a script local variable 
                              --ctld.logTrace(string.format("_code=%s", ctld.p(_code)))
                              --ctld.logTrace(string.format("_droppedTroops:getName()=%s", ctld.p(_droppedTroops:getName())))
-                             ctld.JTACStart(_droppedTroops:getName(), 1688)
+                             ctld.JTACStart(_droppedTroops:getName(), _code)
                          else
                              local _code = table.remove(ctld.jtacGeneratedLaserCodes, 1)
                              --ctld.logTrace(string.format("_code=%s", ctld.p(_code)))
                              table.insert(ctld.jtacGeneratedLaserCodes, _code)
                              --ctld.logTrace(string.format("_droppedTroops:getName()=%s", ctld.p(_droppedTroops:getName())))
-                             --ctld.JTACStart(_droppedTroops:getName(), 1677)
+                             ctld.JTACStart(_droppedTroops:getName(), _code)
                          end
                      end
  
