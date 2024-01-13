@@ -31,6 +31,7 @@
  -- To add debugging messages to dcs.log, change the following log levels to `true`; `Debug` is less detailed than `Trace`
  ctld.Debug = false
  ctld.Trace = false
+ Enable_1_Blackhawk_JTAC = true -- when se to false
  
  ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
  
@@ -128,6 +129,9 @@
  --END AA SYSTEM CONFIG --
  
  -- ***************** JTAC CONFIGURATION *****************
+
+JTAC_W1688 = "none" -- sets the name of the last JTAC group with 1688. DO NOT TOUCH
+
  
  ctld.JTAC_LIMIT_RED = 10 -- max number of JTAC Crates for the RED Side
  ctld.JTAC_LIMIT_BLUE = 10 -- max number of JTAC Crates for the BLUE Side
@@ -1965,6 +1969,8 @@
  end
  
  function ctld.deployTroops(_heli, _troops)
+    ctld.logTrace(string.format("outside value - JTAC_w1688: %s", ctld.p(JTAC_W1688)))
+
 
      local _onboard = ctld.inTransitTroops[_heli:getName()]
  
@@ -1979,23 +1985,35 @@
                  if _extractZone == false then
  
                      local _droppedTroops = ctld.spawnDroppedGroup(_heli:getPoint(), _onboard.troops, false)
-                     if _onboard.troops.jtac or _droppedTroops:getName():lower():find("jtac") then
-                        local _onboardUnit = _droppedTroops:getName() -- get the name of the unit and assigns it to _onboardUnit. We want to use this to check if a JTAC with code 1688 is already spawned.
-                         if (_heli:getTypeName() == "UH-60L" or _heli:getTypeName() == "MH-60R" or _heli:getTypeName() == "SH60B") then -- add logic to check if the jtac name is diff from the stored name 
-                             local _code = 1688
-                             _JTACUnitName = (_onboard.troops.groupName)
-                             -- STORE Jtac name in a script local variable 
-                             --ctld.logTrace(string.format("_code=%s", ctld.p(_code)))
-                             --ctld.logTrace(string.format("_droppedTroops:getName()=%s", ctld.p(_droppedTroops:getName())))
-                             ctld.JTACStart(_droppedTroops:getName(), _code)
-                         else
-                             local _code = table.remove(ctld.jtacGeneratedLaserCodes, 1)
-                             --ctld.logTrace(string.format("_code=%s", ctld.p(_code)))
-                             table.insert(ctld.jtacGeneratedLaserCodes, _code)
-                             --ctld.logTrace(string.format("_droppedTroops:getName()=%s", ctld.p(_droppedTroops:getName())))
-                             ctld.JTACStart(_droppedTroops:getName(), _code)
-                         end
-                     end
+                    if _onboard.troops.jtac or _droppedTroops:getName():lower():find("jtac") then
+                    local _jtacGroup = ctld.getGroup(_droppedTroops:getName())
+                    local _jtacUnit
+                    local _jtacUnit = _jtacGroup[1]
+                    local _onboardUnit = _droppedTroops:getName() -- get the name of the unit and assigns it to _onboardUnit. We want to use this to check if a JTAC with code 1688 is already spawned.
+                    if JTAC_W1688 ~= "none" then
+                        ctld.displayMessageToGroup(_heli, ctld.getPlayerNameOrType(_heli) .. ", we already have  " .. tostring(JTAC_W1688) .. " lasing for BlackHawks, dropping JTAC with regular laser code", 30)
+                    end
+                        if (_heli:getTypeName() == "UH-60L" or _heli:getTypeName() == "MH-60R" or _heli:getTypeName() == "SH60B") and (JTAC_W1688 == "none") then -- add logic to check if the jtac name is diff from the stored name 
+                            local _code = 1688
+                            if Enable_1_Blackhawk_JTAC == true then
+                                JTAC_W1688 = (_onboard.troops.groupName)
+                            else
+                                JTAC_W1688 = "none"
+                            end
+                            _droppedTroops:getName()
+                            -- STORE Jtac name in a script local variable 
+                            ctld.logTrace(string.format("H 60 - JTAC_w1688: %s", ctld.p(JTAC_W1688)))
+                            --ctld.logTrace(string.format("_droppedTroops:getName()=%s", ctld.p(_droppedTroops:getName())))
+                            ctld.JTACStart(_droppedTroops:getName(), _code)
+                        else
+                            local _code = table.remove(ctld.jtacGeneratedLaserCodes, 1)
+                            --ctld.logTrace(string.format("_code=%s", ctld.p(_code)))
+                            ctld.logTrace(string.format("other helos -JTAC_w1688: %s", ctld.p(JTAC_W1688)))
+                            table.insert(ctld.jtacGeneratedLaserCodes, _code)
+                            --ctld.logTrace(string.format("_droppedTroops:getName()=%s", ctld.p(_droppedTroops:getName())))
+                            ctld.JTACStart(_droppedTroops:getName(), _code)
+                        end
+                    end
  
                      if _heli:getCoalition() == 1 then
  
@@ -2197,14 +2215,14 @@
  
              local _unitId = ctld.getNextUnitId()
  
-             _troops[_i] = { type = _unitType, unitId = _unitId, name = string.format("Dropped %s #%i", _unitType, _unitId) }
+             _troops[_i] = { type = _unitType, unitId = _unitId, name = string.format("Airborne %s #%i", _unitType, _unitId) }
          end
      end
  
      local _groupId = ctld.getNextGroupId()
-     local _groupName = "Dropped Group"
+     local _groupName = "Airborne Group"
      if _hasJTAC then
-         _groupName = "Dropped JTAC Group"
+         _groupName = "Airborne JTAC Group"
      end
      local _details = { units = _troops, groupId = _groupId, groupName = string.format("%s %i", _groupName, _groupId), side = _side, country = _country, weight = _weight, jtac = _hasJTAC }
      -- ctld.logTrace(string.format("total  weight=%s", ctld.p(_weight)))
@@ -5808,6 +5826,8 @@
      ctld.jtacTargetsList[_jtacGroupName] = nil
  
      ctld.jtacSelectedTarget[_jtacGroupName] = nil
+
+     JTAC_W1688 = "none"
  
      for _,_specialOption in pairs(ctld.jtacSpecialOptions) do --delete jtac specific settings for all special options
          if _specialOption.jtacs then
