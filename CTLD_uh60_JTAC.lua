@@ -31,7 +31,7 @@
  -- To add debugging messages to dcs.log, change the following log levels to `true`; `Debug` is less detailed than `Trace`
  ctld.Debug = false
  ctld.Trace = false
- Enable_1_Blackhawk_JTAC = true -- when se to false
+ Enable_1_Blackhawk_JTAC = true -- when set to false it will allow every blackHwak to drop JTAC with laser code 1688. Watch out for cross lasing! 
  
  ctld.alreadyInitialized = false -- if true, ctld.initialize() will not run
  
